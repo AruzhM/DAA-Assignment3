@@ -1,164 +1,83 @@
 # DAA Assignment 3 — Graph Algorithms
 
-**Course:** Design and Analysis of Algorithms  
-**Topic:** DSU, MST, SCC, Topological Sorting and Shortest Paths  
-**Implementation:** Java 25, Maven, JUnit 5
+**Student:** Aruzhan Marat | **Group:** SE-2525  
+**Course:** Design and Analysis of Algorithms | **Tools:** Java 25, Maven, JUnit 5
 
-## 1. Introduction
+## 1. Overview
 
-This project implements and evaluates six graph algorithms: Disjoint Set Union (DSU), Kruskal, Prim, Kosaraju, Kahn's topological sorting, and DAG shortest paths. Two bonus features, Tarjan's SCC algorithm and Condensation Graph with Critical Path, are also included.
+The project implements DSU, Kruskal, Prim, Kosaraju, Kahn and DAG shortest paths, plus Tarjan SCC (+10%) and condensation/critical path (+5%). Weighted adjacency lists support directed and undirected graphs. JUnit tests check MST agreement, SCC against brute-force BFS, DAG distances against Bellman–Ford (including negative weights), and iterative DFS stack safety at 100,000 vertices.
 
-The graph representation uses adjacency lists and supports both directed and undirected weighted graphs. Algorithm correctness is evaluated using JUnit tests, cross-checking with independent algorithms, and deterministic reference values.
+Benchmarks use `Random(42)`, five sizes (1,000; 3,162; 10,000; 31,623; 100,000) and two densities (E = 4V and E = 20V). Five algorithms per configuration produce **50 CSV rows**. Timing is the median of five runs. All ten configurations reproduce reference MST weights, SCC counts and sums of DAG distances.
 
-The benchmark covers five vertex counts (1,000; 3,162; 10,000; 31,623; 100,000) and two edge densities (4V and 20V). This produces 50 algorithm measurements. Execution times are reported as the median of five runs, while operation counters provide the main evidence for complexity analysis.
+## 2. Complexity Table
 
-All ten benchmark configurations reproduced the required MST weights, SCC counts, and DAG distance sums.
-
-## 2. Theoretical Complexity
-
-| Algorithm | Time complexity | Extra space | Justification |
+| Algorithm | Time | Extra space | Justification |
 |---|---|---|---|
-| DSU find/union | Amortized O(α(V)) | O(V) | Path compression and union by size keep trees shallow. |
-| Kruskal | O(E log E) | O(V + E) | Sorting dominates; DSU processes edges efficiently. |
-| Prim | O((V + E) log(V + E)) | O(V + E) | A priority queue maintains candidate edges. |
-| Kosaraju | O(V + E) | O(V + E) | Two DFS passes and construction of the reversed graph. |
-| Kahn | O(V + E) | O(V) | Each vertex is queued once and each edge is scanned once. |
-| DAG Shortest Paths | O(V + E) | O(V) | Topological ordering followed by one relaxation pass. |
-| Tarjan (bonus) | O(V + E) | O(V) | Discovery indices and low-link values are updated during one DFS traversal. |
-| Critical Path on DAG (bonus) | O(V + E) | O(V) | Longest distances are calculated in topological order. |
+| DSU find/union | Amortized O(α(V)) | O(V) DSU storage | Path compression and union by size |
+| Kruskal | O(E log E) | O(V + E) | Edge sorting and DSU |
+| Prim | O((V + E) log(V + E)) | O(V + E) | Candidate-edge priority queue |
+| Kosaraju | O(V + E) | O(V + E) | Two iterative DFS passes and reverse graph |
+| Kahn | O(V + E) | O(V) | In-degree array and queue |
+| DAG shortest paths | O(V + E) | O(V) | Topological sort and one relaxation pass |
+| Tarjan (bonus) | O(V + E) | O(V) | Iterative DFS, indices, lowlinks and stack |
+| Critical path on DAG (bonus) | O(V + E) | O(V) | Maximum-weight topological relaxations |
 
-Here, V denotes the number of vertices, E denotes the number of edges, and α(V) is the inverse Ackermann function. Space estimates exclude the input graph unless otherwise noted. For DSU, the O(V) entry represents the stored parent and size arrays.
+Here α is the inverse Ackermann function. Extra space excludes input graph storage; DSU storage includes its parent and size arrays.
 
-## 3. Empirical Results and Operation Counters
+## 3. Operation Counters and Slopes
 
-The benchmark records `dsuOps`, `edgeScans`, `comparisons`, and `maxDepth` directly inside the algorithms.
+Measured counters are `dsuOps`, `edgeScans`, `comparisons`, and `maxDepth`. For plotting, **operations = dsuOps + edgeScans + comparisons**: a reproducible operation proxy, not an instruction count.
 
-For visualization, counted operations are defined as:
-
-**operations = dsuOps + edgeScans + comparisons**
-
-This is a consistent operation-count proxy, not a count of every CPU instruction. Weight comparisons in Kruskal sorting and Prim's priority queue are included.
-
-### 3.1 Log-Log Slope Analysis
-
-| Algorithm | Sparse: operations | Dense: operations | Edge-scan slope |
+| Algorithm | Sparse operations slope | Dense operations slope | Edge-scan slope |
 |---|---:|---:|---:|
 | Kruskal | 1.037 | 1.012 | 1.000 |
 | Prim | 1.101 | 1.085 | 1.000 |
 | Kosaraju | 1.000 | 1.000 | 1.000 |
 | Kahn | 1.000 | 1.000 | 1.000 |
-| DAG Shortest Paths | 1.000 | 1.000 | 1.000 |
+| DAG shortest paths | 1.000 | 1.000 | 1.000 |
 
-The traversal algorithms show slopes of 1.000, consistent with linear edge-scanning work for fixed edge density. Kruskal and Prim have operation slopes slightly above 1 because they perform additional priority-queue or sorting comparisons.
+On log-log axes, traversal slopes of 1.000 support linear edge-scanning work at fixed density. Kruskal scans every edge once, so its **edge-scan** slope is 1.000; sorting comparisons explain why its total-operation slope is slightly higher.
 
-Kruskal's edge-scan slope remains 1.000 because this implementation scans all E edges once. Its sorting work is reflected in the comparison counter rather than the edge-scan counter. These measured slopes describe the benchmark's finite range and do not replace asymptotic proofs.
+For sparse graphs (E = 4V), Kruskal's `dsuOps/E` remains **4.8040–4.8250** across sizes. `edgeScans/(V+E)` stays **1.6000** for Prim and Kosaraju, and **0.8000** for Kahn and DAG shortest paths. This is expected: Prim scans 2E undirected adjacency entries, Kosaraju scans 2E in two passes, while Kahn and DAG relaxation scan E. Stable ratios empirically support their stated complexities.
 
-### 3.2 Counter-to-Formula Ratios
+## 4. Plots
 
-For sparse graphs, E = 4V.
+**Operations vs V (log-log).** Traversals scale nearly linearly; sorting and priority-queue comparisons add work for MST algorithms.
 
-| Algorithm | Ratio | Observed values |
-|---|---|---|
-| Kruskal | dsuOps / E | 4.8040–4.8250 |
-| Prim | edgeScans / (V + E) | 1.6000 |
-| Kosaraju | edgeScans / (V + E) | 1.6000 |
-| Kahn | edgeScans / (V + E) | 0.8000 |
-| DAG Shortest Paths | edgeScans / (V + E) | 0.8000 |
+![Operations vs n](results/plots/operations_vs_n.png)
 
-Kruskal's DSU-operation ratio stays close to 4.82 as graph size increases.
+**Edge scans per edge.** Flat ratios show 2 for Prim/Kosaraju and 1 for Kruskal/Kahn/DAG shortest paths.
 
-Kosaraju scans exactly 2E edges during its two DFS passes. Prim also scans 2E adjacency entries because each undirected edge is represented in both directions. Kahn and DAG relaxation each scan exactly E edges.
+![Scans per edge](results/plots/scans_per_edge.png)
 
-For E = 4V, the ratios become 2E/(V + E) = 1.6 and E/(V + E) = 0.8. Their stability supports the expected linear traversal behavior.
+**Kruskal examined-edge share.** Sparse and dense curves overlap at 1.0 because this implementation examines all E edges without early stopping.
 
-## 4. Benchmark Visualizations
-
-### 4.1 Operations vs Graph Size
-
-![Operations versus number of vertices](results/plots/operations_vs_n.png)
-
-The first plot uses logarithmic axes and compares the growth of counted operations for all five benchmarked algorithms at two edge densities.
-
-Traversals grow approximately linearly under fixed-density scaling. Kruskal and Prim perform additional weight comparisons, producing slightly steeper operation-growth trends.
-
-### 4.2 Edge Scans per Edge
-
-![Edge scans per edge](results/plots/scans_per_edge.png)
-
-The second plot displays edgeScans / E as the number of vertices increases.
-
-The horizontal lines indicate stable edge-scanning ratios. Kosaraju and Prim produce a ratio of 2, while Kruskal, Kahn, and DAG Shortest Paths produce a ratio of 1.
-
-This is consistent with how the implementations traverse their stored edges.
-
-### 4.3 Kruskal's Share of Examined Edges
-
-![Kruskal edge examination share](results/plots/kruskal_edge_share.png)
-
-The third plot compares the fraction of examined edges for sparse and dense graphs.
-
-Both curves overlap at 1.0 because the implemented Kruskal algorithm sorts and examines every edge, even after a spanning tree has been constructed.
-
-Consequently, the graph does not demonstrate an early-stopping advantage. The difference between sparse and dense inputs is instead reflected in the absolute number of processed edges and sorting comparisons.
+![Kruskal edge share](results/plots/kruskal_edge_share.png)
 
 ## 5. Correctness Arguments
 
-### 5.1 Minimum Spanning Tree — Cut Property
+### MST — cut property
 
-Consider any cut that divides the vertices of an undirected graph into two disjoint sets. A minimum-weight edge crossing this cut is safe to add to a minimum spanning tree, provided the current chosen edges can be extended to an MST. This follows from the exchange argument: if an MST does not contain the selected light edge, adding it creates a cycle, and a crossing edge of equal or greater weight can be removed without increasing total weight. Kruskal processes edges in nondecreasing weight order and uses DSU to avoid creating cycles. Whenever Kruskal accepts an edge, it is a safe minimum-weight connection between two different components. Prim applies the same cut property by selecting the lightest available edge connecting the current tree to an unvisited vertex. Therefore, both algorithms construct minimum spanning trees, or minimum spanning forests for disconnected graphs, and must produce the same minimum total weight.
+Consider a cut partitioning an undirected graph's vertices into two sets. A lightest edge across a cut is safe when the currently selected forest can be extended to an MST. If an MST omits that edge, adding it creates a cycle. Another edge on the cycle crosses the cut and is at least as heavy, so exchanging these edges does not increase the total weight. Kruskal considers edges from lightest to heaviest and uses DSU to join different components without cycles. Prim chooses the lightest crossing edge between visited and unvisited vertices. Both therefore construct minimum spanning trees, or minimum spanning forests for disconnected graphs.
 
-### 5.2 DAG Shortest Paths — Induction on Topological Order
+### DAG shortest paths — induction on topological order
 
-A directed acyclic graph has a topological ordering in which every edge goes from an earlier vertex to a later vertex. All vertices with in-degree zero are initialized with distance zero, representing a virtual super-source. Initially, these source distances are correct because no incoming edge can provide an alternative path. Assume that all vertices processed before vertex v have correct shortest distances. Since every predecessor of v appears earlier in the topological ordering, all possible incoming relaxations have already been performed when v is processed. Therefore, the current distance of v is the minimum possible distance from the virtual super-source. By induction, a single pass through the topological order computes the correct shortest distance for every vertex. Negative edge weights are safe because a DAG has no directed cycles, so repeated relaxation around a negative cycle is impossible.
+In a DAG, every edge points forward in a topological ordering. Each vertex with in-degree zero starts at distance zero, representing a virtual super-source. Those source distances are initially correct. Assume all previously processed vertices have correct shortest distances. Every predecessor of the current vertex has already been processed, so all incoming relaxations have been considered. Hence its distance is minimal, and relaxing its outgoing edges propagates correct candidates to later vertices. By induction, a single topological pass finds all shortest distances. Negative weights are safe because DAGs contain no directed cycles, including negative cycles.
 
-## 6. Choosing the Appropriate Algorithm
+## 6. Which Algorithm When?
 
-| Situation | Recommended algorithm | Reason |
+| Situation | Preferred algorithm | Reason |
 |---|---|---|
-| MST with an edge list | Kruskal | Sorting edges and DSU efficiently avoid cycles. |
-| MST with adjacency lists | Prim | A priority queue grows the tree through adjacent edges. |
-| Disconnected undirected graph | Kruskal or Prim | Both can construct a minimum spanning forest. |
-| Strongly connected components | Kosaraju | Two DFS passes provide a straightforward solution. |
-| SCCs with fewer edge scans | Tarjan | One DFS pass avoids constructing a reversed graph. |
-| Dependency scheduling in a DAG | Kahn | Produces a valid ordering based on in-degrees. |
-| Detecting directed cycles through ordering | Kahn | An incomplete topological order identifies a cycle. |
-| Shortest paths in a DAG | DAG Shortest Paths | Linear traversal, including support for negative weights. |
-| Critical path in an acyclic dependency network | DAG longest-path relaxation | Calculates maximum accumulated path weight efficiently. |
+| MST using edge list | Kruskal | Sorting edges and DSU; convenient on sparse graphs |
+| MST using adjacency lists | Prim | Grows a tree with a priority queue |
+| Disconnected undirected graph | Kruskal or Prim | Returns a minimum spanning forest |
+| Identify strongly connected jobs | Kosaraju or Tarjan | SCCs expose cycles; Tarjan uses one DFS pass |
+| Order dependencies / detect directed cycles | Kahn | Queue by in-degree; incomplete order indicates a cycle |
+| DAG shortest paths with negative weights | DAG shortest paths | Linear topological relaxation |
+| Scheduling longest dependency chain | Condensation + critical path | Condensed SCC graph is a DAG |
 
-Graph density and representation affect practical performance. Kruskal is especially convenient when an edge list is already available. Prim works naturally with adjacency lists and priority queues. For dependency graphs, Kahn is appropriate when a topological order is required, while SCC algorithms are useful for identifying mutually dependent jobs.
+**Bonus comparison:** Tarjan records E edge scans compared with Kosaraju's 2E DFS scans. Condensation contracts each SCC to one vertex and retains weighted inter-component edges. The resulting DAG permits linear-time longest-path relaxation, unlike the difficult longest-simple-path problem in general graphs.
 
-## 7. Bonus Implementations
+## 7. Timing and Conclusion
 
-### 7.1 Tarjan's SCC (+10%)
-
-Tarjan uses `index[]`, `lowlink[]`, and a stack of active vertices to identify strongly connected components during one DFS traversal.
-
-Both Tarjan and Kosaraju require O(V + E) time. However, Tarjan scans E edges, while Kosaraju scans 2E edges across two DFS passes, excluding the separate reverse-graph construction work from the scan metric.
-
-The implementation uses an explicit DFS stack to avoid recursion-related stack overflow. Component partitions are checked against Kosaraju and an independent reachability-based reference.
-
-### 7.2 Condensation and Critical Path (+5%)
-
-The condensation graph replaces each strongly connected component with a single vertex. Edges connecting different components become edges in the condensed graph, which is always a DAG.
-
-The implemented critical-path calculation finds a maximum-weight path by processing vertices in topological order. Original weights are preserved for edges between different components, including parallel alternatives.
-
-This technique is relevant to task scheduling and dependency analysis. Longest-path calculations are efficient in DAGs because there are no directed cycles, whereas longest simple paths in general directed graphs are computationally difficult.
-
-## 8. Execution Time and Reproducibility
-
-Execution times were measured in milliseconds using the median of five runs. On the graph with 100,000 vertices and 2,000,000 edges, Kruskal recorded 988.276 ms, Prim 1,999.716 ms, Kosaraju 709.894 ms, Kahn 132.672 ms, and DAG Shortest Paths 258.455 ms.
-
-These values reflect this particular machine and JVM execution environment. Garbage collection, JIT compilation, memory allocation, and background processes can affect timings. Therefore, conclusions about asymptotic complexity rely primarily on reproducible operation counters rather than wall-clock measurements.
-
-The deterministic generator uses `Random(42)`. All ten benchmark configurations matched the provided reference results.
-
-## 9. Conclusion
-
-The project demonstrates the correctness and expected complexity behavior of six core graph algorithms and two bonus implementations.
-
-Kruskal and Prim agree on minimum spanning tree weights, Kosaraju and Tarjan identify strongly connected components, Kahn validates dependency ordering, and DAG relaxation computes shortest distances even with negative edge weights.
-
-Operation counts and log-log slopes provide empirical support for the theoretical complexity analysis. The implementations are validated through automated tests, deterministic benchmark results, and cross-checking with independent algorithms.
-
-The final results, plots, source code, and tests provide a reproducible foundation for comparing graph algorithms across different sizes and densities.
+At V = 100,000 and E = 2,000,000, median times were **988.276 ms** (Kruskal), **1,999.716 ms** (Prim), **709.894 ms** (Kosaraju), **132.672 ms** (Kahn), and **258.455 ms** (DAG shortest paths). Timing depends on JVM compilation, hardware and background load; reproducible counters are stronger complexity evidence. Matching reference values, independent JUnit tests and stable counter ratios support correctness and expected algorithm behavior.
