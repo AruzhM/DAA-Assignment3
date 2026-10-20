@@ -1,7 +1,6 @@
 package algorithms;
 import graph.Graph;
 import graph.Graph.Edge;
-import java.util.Comparator;
 import java.util.PriorityQueue;
 
 public class Prim {
@@ -9,7 +8,10 @@ public class Prim {
     public record Result(
             long totalWeight,
             int edgeCount,
-            int components
+            int components,
+            long dsuOps,
+            long edgeScans,
+            long comparisons
     ) {}
 
     private record Candidate(int vertex, int weight) {}
@@ -24,13 +26,22 @@ public class Prim {
         int n = graph.vertexCount();
         boolean[] visited = new boolean[n];
 
+        final long[] comparisons = {0};
+
         PriorityQueue<Candidate> pq = new PriorityQueue<>(
-                Comparator.comparingInt(Candidate::weight)
+                (a, b) -> {
+                    comparisons[0]++;
+                    return Integer.compare(
+                            a.weight(),
+                            b.weight()
+                    );
+                }
         );
 
         long totalWeight = 0;
         int edgeCount = 0;
         int components = 0;
+        long edgeScans = 0;
 
         for (int start = 0; start < n; start++) {
             if (visited[start]) {
@@ -56,10 +67,15 @@ public class Prim {
                 }
 
                 for (Edge edge : graph.neighbors(u)) {
+                    edgeScans++;
+
                     int v = edge.to();
 
                     if (!visited[v]) {
-                        pq.add(new Candidate(v, edge.weight()));
+                        pq.add(new Candidate(
+                                v,
+                                edge.weight()
+                        ));
                     }
                 }
             }
@@ -68,7 +84,10 @@ public class Prim {
         return new Result(
                 totalWeight,
                 edgeCount,
-                components
+                components,
+                0,
+                edgeScans,
+                comparisons[0]
         );
     }
 }

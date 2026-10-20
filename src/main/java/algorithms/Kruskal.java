@@ -2,7 +2,6 @@ package algorithms;
 import graph.Graph;
 import graph.Graph.Edge;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 
 public class Kruskal {
@@ -10,7 +9,10 @@ public class Kruskal {
     public record Result(
             long totalWeight,
             int edgeCount,
-            int components
+            int components,
+            long dsuOps,
+            long edgeScans,
+            long comparisons
     ) {}
 
     public static Result mst(Graph graph) {
@@ -24,12 +26,22 @@ public class Kruskal {
         DSU dsu = DSU.makeSet(n);
 
         List<Edge> edges = new ArrayList<>(graph.edges());
-        edges.sort(Comparator.comparingInt(Edge::weight));
+
+        // Count actual weight comparisons during sorting.
+        final long[] comparisons = {0};
+
+        edges.sort((a, b) -> {
+            comparisons[0]++;
+            return Integer.compare(a.weight(), b.weight());
+        });
 
         long totalWeight = 0;
         int edgeCount = 0;
+        long edgeScans = 0;
 
         for (Edge edge : edges) {
+            edgeScans++;
+
             int u = edge.from();
             int v = edge.to();
 
@@ -41,10 +53,15 @@ public class Kruskal {
             }
         }
 
+        long dsuOps = dsu.getDsuOps();
+
         return new Result(
                 totalWeight,
                 edgeCount,
-                dsu.components()
+                dsu.components(),
+                dsuOps,
+                edgeScans,
+                comparisons[0]
         );
     }
 }
