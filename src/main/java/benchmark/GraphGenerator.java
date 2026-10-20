@@ -61,6 +61,7 @@ public class GraphGenerator {
         return graph;
     }
 
+
     public static Graph directed(int n, int m) {
         if (n < 1 || m < 0) {
             throw new IllegalArgumentException();
@@ -72,13 +73,38 @@ public class GraphGenerator {
         for (int i = 0; i < m; i++) {
             int u = rnd.nextInt(n);
             int v = rnd.nextInt(n);
-            int weight = 1 + rnd.nextInt(1000);
 
+            while (u == v) {
+                v = rnd.nextInt(n);
+            }
+
+            int weight = 1 + rnd.nextInt(1000);
             graph.addEdge(u, v, weight);
         }
 
         return graph;
     }
+
+
+    public static Graph directedWithoutSelfLoops(int n, int m) {
+        Random rnd = new Random(SEED);
+        Graph graph = new Graph(n, true);
+
+        for (int i = 0; i < m; i++) {
+            int u = rnd.nextInt(n);
+            int v = rnd.nextInt(n);
+
+            while (u == v) {
+                v = rnd.nextInt(n);
+            }
+
+            int weight = 1 + rnd.nextInt(1000);
+            graph.addEdge(u, v, weight);
+        }
+
+        return graph;
+    }
+
 
 
     public static Graph dag(int n, int m) {
