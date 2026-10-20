@@ -80,4 +80,4 @@ In a DAG, every edge points forward in a topological ordering. Each vertex with 
 
 ## 7. Timing and Conclusion
 
-At V = 100,000 and E = 2,000,000, median times were **988.276 ms** (Kruskal), **1,999.716 ms** (Prim), **709.894 ms** (Kosaraju), **132.672 ms** (Kahn), and **258.455 ms** (DAG shortest paths). Timing depends on JVM compilation, hardware and background load; reproducible counters are stronger complexity evidence. Matching reference values, independent JUnit tests and stable counter ratios support correctness and expected algorithm behavior.
+At V = 100,000 and E = 2,000,000, median times were **897.715 ms** (Kruskal), **2246.136 ms** (Prim), **890.920 ms** (Kosaraju), **143.127 ms** (Kahn), and **273.378 ms** (DAG shortest paths). Timing depends on JVM compilation, hardware and background load; reproducible counters are stronger complexity evidence. Matching reference values, independent JUnit tests and stable counter ratios support correctness and expected algorithm behavior.
