@@ -45,7 +45,7 @@ public class GraphGenerator {
             graph.addEdge(u, v, weight);
         }
 
-        // Remaining random edges.
+
         for (int i = n - 1; i < m; i++) {
             int u = rnd.nextInt(n);
             int v = rnd.nextInt(n);
@@ -80,6 +80,7 @@ public class GraphGenerator {
         return graph;
     }
 
+
     public static Graph dag(int n, int m) {
         if (n < 1 || m < 0) {
             throw new IllegalArgumentException();
@@ -88,12 +89,8 @@ public class GraphGenerator {
         Random rnd = new Random(SEED);
         Graph graph = new Graph(n, true);
 
-        int[] permutation = shuffled(n, rnd);
-        int[] rank = new int[n];
 
-        for (int i = 0; i < n; i++) {
-            rank[permutation[i]] = i;
-        }
+        int[] rank = shuffled(n, rnd);
 
         for (int i = 0; i < m; i++) {
             int u = rnd.nextInt(n);
