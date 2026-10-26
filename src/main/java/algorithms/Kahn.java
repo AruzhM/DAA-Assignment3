@@ -21,7 +21,7 @@ public class Kahn {
         int n = graph.vertexCount();
         int[] indegree = new int[n];
 
-        // Calculate in-degrees.
+
         for (Edge edge : graph.edges()) {
             indegree[edge.to()]++;
         }

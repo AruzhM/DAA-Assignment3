@@ -14,7 +14,7 @@ public class DSUReferenceTest {
 
             DSU dsu = DSU.makeSet(n);
 
-            // Simple reference implementation.
+
             int[] label = new int[n];
 
             for (int i = 0; i < n; i++) {

@@ -36,7 +36,7 @@ public class Kosaraju {
         long edgeScans = 0;
         int maxDepth = 0;
 
-        // First pass: DFS finishing order.
+
         for (int start = 0; start < n; start++) {
             if (visited[start]) continue;
 
@@ -68,7 +68,6 @@ public class Kosaraju {
             }
         }
 
-        // Reverse the graph.
         Graph reversed = new Graph(n, true);
 
         for (Edge edge : graph.edges()) {
@@ -79,7 +78,6 @@ public class Kosaraju {
             );
         }
 
-        // Second pass: discover components.
         int[] componentOf = new int[n];
         Arrays.fill(componentOf, -1);
 

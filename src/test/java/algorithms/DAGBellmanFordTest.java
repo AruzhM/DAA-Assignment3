@@ -23,14 +23,14 @@ public class DAGBellmanFordTest {
             indegree[edge.to()]++;
         }
 
-        // Same virtual super-source as the assignment.
+
         for (int i = 0; i < n; i++) {
             if (indegree[i] == 0) {
                 dist[i] = 0;
             }
         }
 
-        // Bellman-Ford: up to V-1 passes.
+
         for (int pass = 0; pass < n - 1; pass++) {
             boolean changed = false;
 

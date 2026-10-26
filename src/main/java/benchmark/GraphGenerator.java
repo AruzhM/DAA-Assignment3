@@ -36,7 +36,9 @@ public class GraphGenerator {
 
         int[] perm = shuffled(n, rnd);
 
-        // Random spanning tree: guarantees connectivity.
+
+
+
         for (int i = 1; i < n; i++) {
             int u = perm[rnd.nextInt(i)];
             int v = perm[i];

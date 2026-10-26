@@ -27,7 +27,7 @@ public class Kruskal {
 
         List<Edge> edges = new ArrayList<>(graph.edges());
 
-        // Count actual weight comparisons during sorting.
+
         final long[] comparisons = {0};
 
         edges.sort((a, b) -> {

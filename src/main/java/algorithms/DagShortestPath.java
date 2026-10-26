@@ -58,8 +58,7 @@ public class DagShortestPath {
         Arrays.fill(dist, INF);
         Arrays.fill(parent, -1);
 
-        // Virtual super-source:
-        // all vertices with in-degree 0 start at distance 0.
+
         for (int v = 0; v < n; v++) {
             if (indegree[v] == 0) {
                 dist[v] = 0;
